@@ -1,0 +1,5 @@
+*.retry
+.DS_Store
+Thumbs.db
+[Dd]esktop.ini
+*.pem

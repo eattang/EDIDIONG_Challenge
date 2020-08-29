@@ -1,0 +1,39 @@
+---
+- hosts: local
+  connection: local
+  gather_facts: False
+  vars_files: vars.yml
+  tasks:
+      - name: Create a new SSH key
+        run_once: true
+        ec2_key:
+            name: ssh-key
+            region: "{{ region }}"
+        register: ssh_key_result
+
+      - name: Save SSH key
+        copy: content="{{ ssh_key_result.key.private_key }}" dest="./ssh_key.pem" mode=0400
+        when: ssh_key_result.changed
+      - name: Create a security group
+        run_once: true
+        ec2_group:
+          name: "{{ security_group }}"
+          description: Webserver security group
+          vpc_id: "{{ vpc_id }}"
+          region: "{{ region }}"
+          rules:
+            - proto: tcp
+              from_port: 22
+              to_port: 22
+              cidr_ip: 0.0.0.0/0
+            - proto: tcp
+              from_port: 80
+              to_port: 80
+              cidr_ip: 0.0.0.0/0
+            - proto: tcp
+              from_port: 443
+              to_port: 443
+              cidr_ip: 0.0.0.0/0
+          rules_egress:
+            - proto: all
+              cidr_ip: 0.0.0.0/0

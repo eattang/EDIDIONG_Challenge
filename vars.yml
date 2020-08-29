@@ -1,0 +1,6 @@
+region: us-east-2
+instance_type: t2.micro
+ami_id: ami-db710fa3
+ec2_count: 1
+vpc_id: vpc-8a06a3e1
+security_group: webserver
