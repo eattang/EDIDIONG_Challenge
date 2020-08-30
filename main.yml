@@ -1,0 +1,3 @@
+---
+- import_playbook: ec2_provisioning.yml
+- import_playbook: ec2_configuration.yml

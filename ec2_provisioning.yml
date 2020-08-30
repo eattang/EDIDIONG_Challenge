@@ -4,16 +4,6 @@
   gather_facts: False
   vars_files: vars.yml
   tasks:
-      - name: Create a new SSH key
-        run_once: true
-        ec2_key:
-            name: ssh-key
-            region: "{{ region }}"
-        register: ssh_key_result
-
-      - name: Save SSH key
-        copy: content="{{ ssh_key_result.key.private_key }}" dest="./ssh_key.pem" mode=0400
-        when: ssh_key_result.changed
       - name: Create a security group
         run_once: true
         ec2_group:
@@ -37,3 +27,29 @@
           rules_egress:
             - proto: all
               cidr_ip: 0.0.0.0/0
+      - name: Launch the new EC2 Instance
+        run_once: true
+        ec2:
+          group: "{{ security_group }}"
+          instance_type: "{{ instance_type }}"
+          image: "{{ ami_id }}"
+          wait: true
+          region: "{{ region }}"
+          key_name: "{{ keypair_name }}"
+          count: "{{ ec2_count }}"
+          vpc_subnet_id: "{{ vpc_subnet_id }}"
+          assign_public_ip: True
+          instance_tags:
+             Name: "{{ ec2_group_name }}"
+        register: ec2
+      - name: Wait for SSH to start
+        wait_for:
+          host: "{{ item.public_ip }}"
+          port: 22
+          state: started
+        with_items: "{{ ec2.instances }}"
+      - name: Add the newly created EC2 Public IP to the hosts file in order to connect to it during configuration management
+        add_host:
+          name: "{{ item.public_ip }}"
+          groups: "{{ ec2_group_name }}"
+        with_items: "{{ ec2.instances }}"

@@ -1,6 +1,10 @@
 region: us-east-2
 instance_type: t2.micro
-ami_id: ami-db710fa3
+ami_id: ami-0bbe28eb2173f6167
 ec2_count: 1
 vpc_id: vpc-8a06a3e1
+vpc_subnet_id: subnet-5694583d
 security_group: webserver
+keypair_name: ssh-key
+ec2_group_name: webservers
+ec2_ssh_username: ubuntu
